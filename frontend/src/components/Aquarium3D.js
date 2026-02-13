@@ -4,8 +4,8 @@ import * as THREE from 'three';
 
 function Fish({ position, color, fishId, onFishClick, isSelected }) {
   const meshRef = useRef();
-  const targetPos = useRef(new THREE.Vector3(...position));
-  const velocity = useRef(new THREE.Vector3(
+  const [targetPos] = useState(() => new THREE.Vector3(...position));
+  const [velocity] = useState(() => new THREE.Vector3(
     (Math.random() - 0.5) * 0.02,
     (Math.random() - 0.5) * 0.01,
     (Math.random() - 0.5) * 0.02
@@ -16,37 +16,41 @@ function Fish({ position, color, fishId, onFishClick, isSelected }) {
   useFrame((state, delta) => {
     if (!meshRef.current) return;
 
-    swimTime.current += delta;
-    
-    const mesh = meshRef.current;
-    const bounds = { x: 8, y: 4, z: 3 };
-    
-    if (Math.random() < 0.01) {
-      targetPos.current.set(
-        (Math.random() - 0.5) * bounds.x * 2,
-        (Math.random() - 0.5) * bounds.y * 2,
-        (Math.random() - 0.5) * bounds.z * 2
-      );
+    try {
+      swimTime.current += delta;
+      
+      const mesh = meshRef.current;
+      const bounds = { x: 8, y: 4, z: 3 };
+      
+      if (Math.random() < 0.01) {
+        targetPos.set(
+          (Math.random() - 0.5) * bounds.x * 2,
+          (Math.random() - 0.5) * bounds.y * 2,
+          (Math.random() - 0.5) * bounds.z * 2
+        );
+      }
+      
+      const direction = new THREE.Vector3()
+        .subVectors(targetPos, mesh.position)
+        .normalize()
+        .multiplyScalar(0.015);
+      
+      velocity.lerp(direction, 0.1);
+      mesh.position.add(velocity);
+      
+      mesh.position.x = THREE.MathUtils.clamp(mesh.position.x, -bounds.x, bounds.x);
+      mesh.position.y = THREE.MathUtils.clamp(mesh.position.y, -bounds.y, bounds.y);
+      mesh.position.z = THREE.MathUtils.clamp(mesh.position.z, -bounds.z, bounds.z);
+      
+      if (velocity.length() > 0.001) {
+        const targetRotation = Math.atan2(velocity.x, velocity.z);
+        mesh.rotation.y = THREE.MathUtils.lerp(mesh.rotation.y, targetRotation, 0.1);
+      }
+      
+      mesh.position.y += Math.sin(swimTime.current * 2) * 0.002;
+    } catch (error) {
+      console.error('Fish animation error:', error);
     }
-    
-    const direction = new THREE.Vector3()
-      .subVectors(targetPos.current, mesh.position)
-      .normalize()
-      .multiplyScalar(0.015);
-    
-    velocity.current.lerp(direction, 0.1);
-    mesh.position.add(velocity.current);
-    
-    mesh.position.x = THREE.MathUtils.clamp(mesh.position.x, -bounds.x, bounds.x);
-    mesh.position.y = THREE.MathUtils.clamp(mesh.position.y, -bounds.y, bounds.y);
-    mesh.position.z = THREE.MathUtils.clamp(mesh.position.z, -bounds.z, bounds.z);
-    
-    if (velocity.current.length() > 0.001) {
-      const targetRotation = Math.atan2(velocity.current.x, velocity.current.z);
-      mesh.rotation.y = THREE.MathUtils.lerp(mesh.rotation.y, targetRotation, 0.1);
-    }
-    
-    mesh.position.y += Math.sin(swimTime.current * 2) * 0.002;
   });
 
   const scale = isSelected ? 1.3 : 1;
