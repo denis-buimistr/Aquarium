@@ -118,11 +118,20 @@ function OceanFloor() {
 }
 
 export default function Aquarium3D({ fishList, onFishClick, selectedFishId }) {
+  if (!fishList || fishList.length === 0) {
+    return (
+      <div className="fixed inset-0 z-0 flex items-center justify-center bg-[#050A14]">
+        <div className="text-white text-xl">Загрузка аквариума...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-0">
       <Canvas
         camera={{ position: [0, 0, 10], fov: 50 }}
         gl={{ alpha: true, antialias: true }}
+        dpr={[1, 2]}
       >
         <color attach="background" args={['#050A14']} />
         
