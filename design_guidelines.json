@@ -1,0 +1,153 @@
+{
+  "project_name": "AquaGacha",
+  "design_philosophy": {
+    "theme": "Neon Ocean / Cyber-Aquatic",
+    "vibe": "Playful, High-Energy, Gamified, Immersive",
+    "core_principles": [
+      "Depth over Flatness: Use 3D space and layered glass UI",
+      "Rarity is King: Color coding must be aggressive and consistent",
+      "Motion is Feedback: Every click, hover, and reveal needs juice",
+      "Glassmorphism: UI floats above the aquarium, never hiding it completely"
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Nunito, 'Comic Sans MS', sans-serif",
+      "body": "Inter, system-ui, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "h1": "text-5xl font-black tracking-tight",
+      "h2": "text-4xl font-bold tracking-tight",
+      "h3": "text-2xl font-bold",
+      "body": "text-base font-medium",
+      "caption": "text-xs font-bold tracking-wider uppercase"
+    }
+  },
+  "colors": {
+    "background": {
+      "deep_ocean": "#050A14",
+      "surface_glass": "rgba(15, 23, 42, 0.6)",
+      "card_bg": "rgba(255, 255, 255, 0.05)"
+    },
+    "rarity": {
+      "common": {
+        "color": "#4ADE80",
+        "glow": "0 0 10px #4ADE80",
+        "name": "Common"
+      },
+      "rare": {
+        "color": "#22D3EE",
+        "glow": "0 0 15px #22D3EE",
+        "name": "Rare"
+      },
+      "epic": {
+        "color": "#A855F7",
+        "glow": "0 0 20px #A855F7",
+        "name": "Epic"
+      },
+      "legendary": {
+        "color": "#FACC15",
+        "glow": "0 0 25px #FACC15",
+        "name": "Legendary"
+      },
+      "mythical": {
+        "color": "#FF003C",
+        "glow": "0 0 30px #FF003C, 0 0 60px #FF003C",
+        "name": "Mythical"
+      }
+    },
+    "ui": {
+      "primary": "#3B82F6",
+      "secondary": "#64748B",
+      "accent": "#F43F5E",
+      "text_main": "#F8FAFC",
+      "text_muted": "#94A3B8",
+      "border": "rgba(255,255,255,0.1)"
+    }
+  },
+  "layout_structure": {
+    "root": "h-screen w-screen overflow-hidden bg-[#050A14] relative",
+    "aquarium_layer": "absolute inset-0 z-0",
+    "ui_layer": "absolute inset-0 z-10 pointer-events-none",
+    "interactive_elements": "pointer-events-auto",
+    "sections": {
+      "sidebar_left": "absolute left-4 top-4 bottom-4 w-80 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6 transition-transform transform duration-300 pointer-events-auto",
+      "center_gacha": "absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 pointer-events-auto",
+      "leaderboard": "absolute right-4 top-4 w-64 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-4 max-h-[50vh] overflow-y-auto pointer-events-auto",
+      "auth_overlay": "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+    }
+  },
+  "components": {
+    "Button": {
+      "base": "relative px-8 py-3 rounded-full font-bold transition-all duration-200 active:scale-95 shadow-[0_0_20px_rgba(0,0,0,0.3)] overflow-hidden group",
+      "variants": {
+        "gacha": "bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:brightness-110 hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] border-2 border-white/20",
+        "secondary": "bg-white/10 hover:bg-white/20 text-white border border-white/10"
+      }
+    },
+    "Card": {
+      "base": "bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden",
+      "hover": "hover:border-white/30 transition-colors"
+    },
+    "FishInfo": {
+      "container": "space-y-4",
+      "image_placeholder": "w-full h-48 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-lg animate-pulse",
+      "title": "text-3xl font-black text-white drop-shadow-md",
+      "stats_grid": "grid grid-cols-2 gap-2 text-sm text-gray-300"
+    },
+    "RarityBadge": {
+      "base": "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-white/20 shadow-lg"
+    }
+  },
+  "motion": {
+    "transitions": "transition-all duration-300 ease-out",
+    "animations": {
+      "float": "animate-float",
+      "pulse": "animate-pulse",
+      "gacha_shake": "animate-shake",
+      "reveal_flash": "animate-flash"
+    }
+  },
+  "three_js_guidelines": {
+    "camera": "PerspectiveCamera, position [0, 0, 10], fov 50",
+    "lighting": "AmbientLight intensity 0.5, PointLight (blue/purple) at top corners",
+    "fish_behavior": "Wander randomly, avoid walls, smooth turns (lerp rotation)",
+    "interaction": "Raycaster for click detection. On click -> Select fish state -> Open Sidebar"
+  },
+  "assets": {
+    "images": [
+      {
+        "category": "fish_textures",
+        "url": "https://images.unsplash.com/photo-1644274264281-2f968a5b312a?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "General fish texture reference"
+      },
+      {
+        "category": "fish_textures",
+        "url": "https://images.unsplash.com/photo-1644274262815-4efb5078bedd?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Colorful school texture"
+      },
+      {
+        "category": "rare_fish",
+        "url": "https://images.unsplash.com/photo-1760559058478-3d29cfcd5792?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Exotic blue spots (Rare/Epic reference)"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "1. Setup React-Three-Fiber in the main page. The Canvas should be the background.",
+    "2. Implement the 'Rarity' logic in CSS first (define utility classes for text-rare, bg-rare, etc).",
+    "3. Build the Sidebar as a conditional rendering component that slides in.",
+    "4. Use the Gacha Button to trigger a state change that spawns a new fish in 3D space with a 'reveal' effect.",
+    "5. Ensure the Leaderboard is scrollable but doesn't take up more than 30% of the screen width.",
+    "6. Use 'sonner' for toast notifications when a user unlocks a new fish.",
+    "7. Mock the 3D Fish with simple meshes (Sphere/Cone) if models are missing, but apply different colors based on rarity.",
+    "8. Authentication page should be a simple centered modal over a blurred aquarium background."
+  ],
+  "universal_guidelines": [
+    "Do not use generic gradients.",
+    "Use backdrop-blur-xl for all UI panels to ensure text readability over the 3D scene.",
+    "All interactive elements must have hover states (brightness-110 or scale-105).",
+    "Add 'data-testid' to all buttons and inputs."
+  ]
+}
