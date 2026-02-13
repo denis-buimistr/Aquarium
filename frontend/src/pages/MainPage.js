@@ -61,10 +61,20 @@ export default function MainPage({ onLogout }) {
   };
 
   useEffect(() => {
-    fetchAquariumFish();
-    fetchLeaderboard();
-    fetchUserStats();
-    fetchGachaStatus();
+    const initializeData = async () => {
+      try {
+        await Promise.all([
+          fetchAquariumFish(),
+          fetchLeaderboard(),
+          fetchUserStats(),
+          fetchGachaStatus()
+        ]);
+      } catch (error) {
+        console.error('Error initializing data:', error);
+      }
+    };
+
+    initializeData();
 
     const aquariumInterval = setInterval(fetchAquariumFish, 30 * 60 * 1000);
     const leaderboardInterval = setInterval(fetchLeaderboard, 10000);
