@@ -141,15 +141,24 @@ export default function Aquarium2D({ fishList, onFishClick, selectedFishId }) {
     const y = e.clientY - rect.top;
 
     // Check if click is on a fish
+    let clickedFish = null;
+    let minDistance = Infinity;
+    
     fishPositions.current.forEach(fish => {
       const dx = x - fish.x;
       const dy = y - fish.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      if (distance < fish.size) {
-        onFishClick(fish.id);
+      if (distance < fish.size && distance < minDistance) {
+        minDistance = distance;
+        clickedFish = fish;
       }
     });
+    
+    if (clickedFish) {
+      console.log('Fish clicked:', clickedFish.id, clickedFish.name);
+      onFishClick(clickedFish.id);
+    }
   };
 
   if (!fishList || fishList.length === 0) {
