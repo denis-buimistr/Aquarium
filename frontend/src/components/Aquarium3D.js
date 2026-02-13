@@ -1,53 +1,37 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 function Fish({ position, color, fishId, onFishClick, isSelected }) {
   const meshRef = useRef();
-  const [targetPos] = useState(() => new THREE.Vector3(...position));
-  const [velocity] = useState(() => new THREE.Vector3(
-    (Math.random() - 0.5) * 0.02,
-    (Math.random() - 0.5) * 0.01,
-    (Math.random() - 0.5) * 0.02
-  ));
+  const [localPosition] = useState(position);
+  const [velocity] = useState(() => ({
+    x: (Math.random() - 0.5) * 0.02,
+    y: (Math.random() - 0.5) * 0.01,
+    z: (Math.random() - 0.5) * 0.02
+  }));
   
-  const swimTime = useRef(0);
+  const time = useRef(0);
 
   useFrame((state, delta) => {
     if (!meshRef.current) return;
 
     try {
-      swimTime.current += delta;
+      time.current += delta;
       
       const mesh = meshRef.current;
-      const bounds = { x: 8, y: 4, z: 3 };
       
-      if (Math.random() < 0.01) {
-        targetPos.set(
-          (Math.random() - 0.5) * bounds.x * 2,
-          (Math.random() - 0.5) * bounds.y * 2,
-          (Math.random() - 0.5) * bounds.z * 2
-        );
+      mesh.position.x += velocity.x;
+      mesh.position.y += velocity.y + Math.sin(time.current * 2) * 0.002;
+      mesh.position.z += velocity.z;
+      
+      if (Math.abs(mesh.position.x) > 8) velocity.x *= -1;
+      if (Math.abs(mesh.position.y) > 4) velocity.y *= -1;
+      if (Math.abs(mesh.position.z) > 3) velocity.z *= -1;
+      
+      if (Math.abs(velocity.x) > 0.001) {
+        mesh.rotation.y = Math.atan2(velocity.x, velocity.z);
       }
-      
-      const direction = new THREE.Vector3()
-        .subVectors(targetPos, mesh.position)
-        .normalize()
-        .multiplyScalar(0.015);
-      
-      velocity.lerp(direction, 0.1);
-      mesh.position.add(velocity);
-      
-      mesh.position.x = THREE.MathUtils.clamp(mesh.position.x, -bounds.x, bounds.x);
-      mesh.position.y = THREE.MathUtils.clamp(mesh.position.y, -bounds.y, bounds.y);
-      mesh.position.z = THREE.MathUtils.clamp(mesh.position.z, -bounds.z, bounds.z);
-      
-      if (velocity.length() > 0.001) {
-        const targetRotation = Math.atan2(velocity.x, velocity.z);
-        mesh.rotation.y = THREE.MathUtils.lerp(mesh.rotation.y, targetRotation, 0.1);
-      }
-      
-      mesh.position.y += Math.sin(swimTime.current * 2) * 0.002;
     } catch (error) {
       console.error('Fish animation error:', error);
     }
@@ -58,7 +42,7 @@ function Fish({ position, color, fishId, onFishClick, isSelected }) {
   return (
     <mesh
       ref={meshRef}
-      position={position}
+      position={localPosition}
       scale={scale}
       onClick={(e) => {
         e.stopPropagation();
@@ -98,25 +82,41 @@ function Fish({ position, color, fishId, onFishClick, isSelected }) {
 }
 
 function OceanFloor() {
+  const rocks = useMemo(() => {
+    return [...Array(15)].map((_, i) => ({
+      key: i,
+      position: [
+        (Math.random() - 0.5) * 20,
+        -4.5 + Math.random() * 0.5,
+        (Math.random() - 0.5) * 20
+      ],
+      size: Math.random() * 0.3 + 0.1
+    }));
+  }, []);
+
   return (
     <>
       <mesh position={[0, -5, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[30, 30]} />
         <meshStandardMaterial color="#0A1628" opacity={0.3} transparent />
       </mesh>
-      {[...Array(15)].map((_, i) => (
-        <mesh
-          key={i}
-          position={[
-            (Math.random() - 0.5) * 20,
-            -4.5 + Math.random() * 0.5,
-            (Math.random() - 0.5) * 20
-          ]}
-        >
-          <sphereGeometry args={[Math.random() * 0.3 + 0.1, 8, 8]} />
+      {rocks.map(rock => (
+        <mesh key={rock.key} position={rock.position}>
+          <sphereGeometry args={[rock.size, 8, 8]} />
           <meshStandardMaterial color="#1E3A5F" />
         </mesh>
       ))}
+    </>
+  );
+}
+
+function Lights() {
+  return (
+    <>
+      <ambientLight intensity={0.4} />
+      <pointLight position={[-10, 10, -10]} intensity={0.8} color="#3B82F6" />
+      <pointLight position={[10, 10, 10]} intensity={0.6} color="#8B5CF6" />
+      <pointLight position={[0, -5, 5]} intensity={0.3} color="#22D3EE" />
     </>
   );
 }
@@ -134,30 +134,26 @@ export default function Aquarium3D({ fishList, onFishClick, selectedFishId }) {
     <div className="fixed inset-0 z-0">
       <Canvas
         camera={{ position: [0, 0, 10], fov: 50 }}
-        gl={{ alpha: true, antialias: true }}
         dpr={[1, 2]}
       >
         <color attach="background" args={['#050A14']} />
-        
-        <ambientLight intensity={0.4} />
-        <pointLight position={[-10, 10, -10]} intensity={0.8} color="#3B82F6" />
-        <pointLight position={[10, 10, 10]} intensity={0.6} color="#8B5CF6" />
-        <pointLight position={[0, -5, 5]} intensity={0.3} color="#22D3EE" />
-        
         <fog attach="fog" args={['#050A14', 5, 25]} />
         
-        <OceanFloor />
-        
-        {fishList.map((fish) => (
-          <Fish
-            key={fish.id}
-            fishId={fish.id}
-            position={fish.position}
-            color={fish.color}
-            onFishClick={onFishClick}
-            isSelected={selectedFishId === fish.id}
-          />
-        ))}
+        <Suspense fallback={null}>
+          <Lights />
+          <OceanFloor />
+          
+          {fishList.map((fish) => (
+            <Fish
+              key={fish.id}
+              fishId={fish.id}
+              position={fish.position}
+              color={fish.color}
+              onFishClick={onFishClick}
+              isSelected={selectedFishId === fish.id}
+            />
+          ))}
+        </Suspense>
       </Canvas>
     </div>
   );
