@@ -95,13 +95,19 @@ export default function MainPage({ onLogout }) {
     }
   };
 
-  const handleFishUnlocked = (fish, isNew, totalPoints) => {
+  const handleFishUnlocked = async (fish, isNew, totalPoints) => {
     setUserStats(prev => ({
       ...prev,
       total_points: totalPoints,
       total_fish: isNew ? prev.total_fish + 1 : prev.total_fish
     }));
     fetchLeaderboard();
+    
+    // Automatically show the fish details after unlocking
+    if (isNew) {
+      setSelectedFish(fish);
+      setSidebarOpen(true);
+    }
   };
 
   const handleCaseUsed = () => {
