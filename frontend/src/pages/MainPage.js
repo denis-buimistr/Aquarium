@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Aquarium3D from '../components/Aquarium3D';
+import Aquarium2D from '../components/Aquarium2D';
 import FishSidebar from '../components/FishSidebar';
 import GachaButton from '../components/GachaButton';
 import GachaSlotMachine from '../components/GachaSlotMachine';
