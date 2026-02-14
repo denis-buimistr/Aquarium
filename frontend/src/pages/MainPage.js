@@ -6,6 +6,7 @@ import GachaButton from '../components/GachaButton';
 import GachaSlotMachine from '../components/GachaSlotMachine';
 import Leaderboard from '../components/Leaderboard';
 import UserStats from '../components/UserStats';
+import CollectionPage from './CollectionPage';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
