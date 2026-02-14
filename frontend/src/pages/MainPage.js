@@ -191,6 +191,7 @@ export default function MainPage({ onLogout }) {
 
       <GachaButton
         onOpenClick={handleOpenCase}
+        onCollectionClick={() => setShowCollection(true)}
         casesRemaining={casesRemaining}
       />
 
