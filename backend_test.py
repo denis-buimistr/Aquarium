@@ -6,7 +6,7 @@ from datetime import datetime
 class AquariumAPITester:
     def __init__(self):
         # Use the same URL as frontend for consistency
-        self.base_url = "https://fish-quest-8.preview.emergentagent.com/api"
+        self.base_url = "https://nemo-aquarium.preview.emergentagent.com/api"
         self.token = None
         self.user_id = None
         self.tests_run = 0
