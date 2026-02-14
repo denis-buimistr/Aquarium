@@ -167,6 +167,10 @@ export default function MainPage({ onLogout }) {
     setGachaModalOpen(false);
   };
 
+  if (showCollection) {
+    return <CollectionPage onBack={() => setShowCollection(false)} />;
+  }
+
   return (
     <div className="relative w-screen h-screen overflow-hidden">
       <Aquarium2D
