@@ -168,7 +168,7 @@ export default function MainPage({ onLogout }) {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      <Aquarium3D
+      <Aquarium2D
         fishList={aquariumFish}
         onFishClick={handleFishClick}
         selectedFishId={selectedFish?.id}
