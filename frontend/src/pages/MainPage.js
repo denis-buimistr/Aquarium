@@ -21,7 +21,7 @@ export default function MainPage({ onLogout }) {
   const [userStats, setUserStats] = useState({ total_points: 0, total_fish: 0 });
   const [casesRemaining, setCasesRemaining] = useState(1);
   const [gachaModalOpen, setGachaModalOpen] = useState(false);
-  const [pendingGachaResult, setPendingGachaResult] = useState(null);
+  const [showCollection, setShowCollection] = useState(false);
   const currentUserId = localStorage.getItem('user_id');
 
   const getAuthHeaders = () => ({
