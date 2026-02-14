@@ -5,6 +5,8 @@ export default function Aquarium2D({ fishList, onFishClick, selectedFishId }) {
   const fishPositions = useRef([]);
   const animationRef = useRef(null);
   const bubblesRef = useRef([]);
+  const plantsRef = useRef([]);
+  const rocksRef = useRef([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -18,8 +20,8 @@ export default function Aquarium2D({ fishList, onFishClick, selectedFishId }) {
     if (fishPositions.current.length === 0 && fishList && fishList.length > 0) {
       fishPositions.current = fishList.map(fish => ({
         ...fish,
-        x: fish.position ? fish.position[0] * 50 + canvas.width / 2 : Math.random() * canvas.width,
-        y: fish.position ? fish.position[1] * 50 + canvas.height / 2 : Math.random() * canvas.height,
+        x: fish.position ? fish.position[0] * 50 + canvas.width / 2 : Math.random() * (canvas.width - 200) + 100,
+        y: fish.position ? fish.position[1] * 50 + canvas.height / 2 : Math.random() * (canvas.height - 250) + 50,
         vx: (Math.random() - 0.5) * 2,
         vy: (Math.random() - 0.5) * 1,
         angle: Math.random() * Math.PI * 2,
@@ -35,6 +37,30 @@ export default function Aquarium2D({ fishList, onFishClick, selectedFishId }) {
         y: Math.random() * canvas.height,
         radius: Math.random() * 3 + 1,
         speed: Math.random() * 0.5 + 0.2
+      }));
+    }
+
+    // Initialize plants
+    if (plantsRef.current.length === 0) {
+      const plantCount = Math.floor(canvas.width / 120);
+      plantsRef.current = [...Array(plantCount)].map((_, i) => ({
+        x: (i + 0.5) * (canvas.width / plantCount) + (Math.random() - 0.5) * 60,
+        height: Math.random() * 120 + 80,
+        width: Math.random() * 20 + 15,
+        color: Math.random() > 0.5 ? '#2d5a3d' : '#1e4d2b',
+        swayOffset: Math.random() * Math.PI * 2,
+        type: Math.floor(Math.random() * 3)
+      }));
+    }
+
+    // Initialize rocks
+    if (rocksRef.current.length === 0) {
+      const rockCount = Math.floor(canvas.width / 200);
+      rocksRef.current = [...Array(rockCount)].map((_, i) => ({
+        x: (i + 0.5) * (canvas.width / rockCount) + (Math.random() - 0.5) * 100,
+        width: Math.random() * 60 + 40,
+        height: Math.random() * 30 + 20,
+        color: `rgb(${80 + Math.random() * 40}, ${70 + Math.random() * 30}, ${60 + Math.random() * 20})`
       }));
     }
 
@@ -181,16 +207,154 @@ export default function Aquarium2D({ fishList, onFishClick, selectedFishId }) {
         .toString(16).slice(1);
     };
 
+    // Draw plant function
+    const drawPlant = (plant, time) => {
+      const sway = Math.sin(time * 0.002 + plant.swayOffset) * 10;
+      const baseY = canvas.height - 30;
+      
+      ctx.save();
+      ctx.translate(plant.x, baseY);
+      
+      if (plant.type === 0) {
+        // Seaweed type
+        for (let i = 0; i < 5; i++) {
+          const leafSway = sway * (1 + i * 0.2);
+          ctx.beginPath();
+          ctx.moveTo(i * 8 - 16, 0);
+          ctx.quadraticCurveTo(
+            i * 8 - 16 + leafSway * 0.5, -plant.height * 0.5,
+            i * 8 - 16 + leafSway, -plant.height
+          );
+          ctx.strokeStyle = plant.color;
+          ctx.lineWidth = plant.width / 3;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+        }
+      } else if (plant.type === 1) {
+        // Kelp type
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        for (let i = 0; i <= plant.height; i += 20) {
+          const xOffset = Math.sin(i * 0.05 + time * 0.003 + plant.swayOffset) * 15;
+          ctx.lineTo(xOffset, -i);
+        }
+        ctx.strokeStyle = plant.color;
+        ctx.lineWidth = plant.width / 2;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        
+        // Leaves
+        for (let i = 30; i < plant.height; i += 30) {
+          const xOffset = Math.sin(i * 0.05 + time * 0.003 + plant.swayOffset) * 15;
+          ctx.beginPath();
+          ctx.ellipse(xOffset, -i, plant.width, plant.width * 2, Math.PI / 4, 0, Math.PI * 2);
+          ctx.fillStyle = plant.color;
+          ctx.globalAlpha = 0.7;
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        }
+      } else {
+        // Coral type
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(
+          -plant.width + sway * 0.3, -plant.height * 0.3,
+          -plant.width * 0.5 + sway * 0.5, -plant.height * 0.7,
+          sway * 0.7, -plant.height
+        );
+        ctx.bezierCurveTo(
+          plant.width * 0.5 + sway * 0.5, -plant.height * 0.7,
+          plant.width + sway * 0.3, -plant.height * 0.3,
+          0, 0
+        );
+        const coralColor = Math.random() > 0.5 ? '#8b4557' : '#6b8e6b';
+        ctx.fillStyle = coralColor;
+        ctx.fill();
+      }
+      
+      ctx.restore();
+    };
+
+    // Draw rock function
+    const drawRock = (rock) => {
+      const baseY = canvas.height - 20;
+      
+      ctx.save();
+      ctx.translate(rock.x, baseY);
+      
+      // Main rock body
+      ctx.beginPath();
+      ctx.moveTo(-rock.width / 2, 0);
+      ctx.quadraticCurveTo(-rock.width / 2.5, -rock.height * 0.8, -rock.width / 4, -rock.height);
+      ctx.quadraticCurveTo(0, -rock.height * 1.1, rock.width / 4, -rock.height);
+      ctx.quadraticCurveTo(rock.width / 2.5, -rock.height * 0.8, rock.width / 2, 0);
+      ctx.closePath();
+      
+      const rockGradient = ctx.createLinearGradient(0, 0, 0, -rock.height);
+      rockGradient.addColorStop(0, rock.color);
+      rockGradient.addColorStop(1, shadeColor(rock.color, 20));
+      ctx.fillStyle = rockGradient;
+      ctx.fill();
+      
+      // Rock highlights
+      ctx.beginPath();
+      ctx.ellipse(-rock.width / 6, -rock.height * 0.6, rock.width / 8, rock.height / 6, -0.3, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.fill();
+      
+      ctx.restore();
+    };
+
+    // Draw sandy bottom
+    const drawSandyBottom = () => {
+      const sandGradient = ctx.createLinearGradient(0, canvas.height - 50, 0, canvas.height);
+      sandGradient.addColorStop(0, 'rgba(194, 178, 128, 0.3)');
+      sandGradient.addColorStop(0.5, 'rgba(194, 178, 128, 0.6)');
+      sandGradient.addColorStop(1, 'rgba(160, 140, 100, 0.8)');
+      ctx.fillStyle = sandGradient;
+      ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+      
+      // Sand texture
+      ctx.fillStyle = 'rgba(180, 160, 110, 0.4)';
+      for (let i = 0; i < 100; i++) {
+        const x = (i * 37) % canvas.width;
+        const y = canvas.height - 40 + Math.sin(i) * 15;
+        ctx.beginPath();
+        ctx.arc(x, y, 2 + Math.random() * 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+
     const animate = () => {
+      const time = Date.now();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Ocean gradient background
       const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
       gradient.addColorStop(0, '#001a33');
       gradient.addColorStop(0.5, '#003d66');
-      gradient.addColorStop(1, '#001a33');
+      gradient.addColorStop(1, '#002244');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Light rays
+      ctx.save();
+      ctx.globalAlpha = 0.05;
+      for (let i = 0; i < 5; i++) {
+        const x = (time * 0.01 + i * 200) % canvas.width;
+        ctx.fillStyle = '#87CEEB';
+        ctx.fillRect(x, 0, 50, canvas.height);
+      }
+      ctx.restore();
+
+      // Draw sandy bottom
+      drawSandyBottom();
+
+      // Draw rocks (behind plants)
+      rocksRef.current.forEach(rock => drawRock(rock));
+
+      // Draw plants
+      plantsRef.current.forEach(plant => drawPlant(plant, time));
 
       // Bubbles
       bubblesRef.current.forEach(bubble => {
@@ -217,27 +381,50 @@ export default function Aquarium2D({ fishList, onFishClick, selectedFishId }) {
         ctx.fill();
       });
 
-      // Light rays
-      ctx.save();
-      ctx.globalAlpha = 0.05;
-      for (let i = 0; i < 5; i++) {
-        const x = (Date.now() * 0.01 + i * 200) % canvas.width;
-        ctx.fillStyle = '#87CEEB';
-        ctx.fillRect(x, 0, 50, canvas.height);
-      }
-      ctx.restore();
+      // Fish collision avoidance and movement
+      const minDistance = 60;
+      fishPositions.current.forEach((fish, i) => {
+        // Collision avoidance with other fish
+        fishPositions.current.forEach((otherFish, j) => {
+          if (i !== j) {
+            const dx = fish.x - otherFish.x;
+            const dy = fish.y - otherFish.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < minDistance && distance > 0) {
+              // Push fish apart
+              const pushStrength = (minDistance - distance) / minDistance * 0.5;
+              const pushX = (dx / distance) * pushStrength;
+              const pushY = (dy / distance) * pushStrength;
+              
+              fish.vx += pushX;
+              fish.vy += pushY;
+              
+              // Limit velocity
+              const maxSpeed = 2.5;
+              const speed = Math.sqrt(fish.vx * fish.vx + fish.vy * fish.vy);
+              if (speed > maxSpeed) {
+                fish.vx = (fish.vx / speed) * maxSpeed;
+                fish.vy = (fish.vy / speed) * maxSpeed;
+              }
+            }
+          }
+        });
 
-      // Update and draw fish
-      fishPositions.current.forEach(fish => {
         fish.x += fish.vx;
         fish.y += fish.vy;
         fish.tailPhase += 0.2;
 
-        if (fish.x < 50 || fish.x > canvas.width - 50) fish.vx *= -1;
-        if (fish.y < 50 || fish.y > canvas.height - 50) fish.vy *= -1;
+        // Boundary collision (keep away from bottom for plants)
+        if (fish.x < 60 || fish.x > canvas.width - 60) fish.vx *= -1;
+        if (fish.y < 60 || fish.y > canvas.height - 150) fish.vy *= -1;
+        
+        // Keep fish in bounds
+        fish.x = Math.max(60, Math.min(canvas.width - 60, fish.x));
+        fish.y = Math.max(60, Math.min(canvas.height - 150, fish.y));
 
         fish.angle = Math.atan2(fish.vy, fish.vx);
-        fish.y += Math.sin(Date.now() * 0.002 + fish.x * 0.01) * 0.3;
+        fish.y += Math.sin(time * 0.002 + fish.x * 0.01) * 0.3;
 
         const isSelected = selectedFishId === fish.id;
         drawFish(fish, isSelected);
